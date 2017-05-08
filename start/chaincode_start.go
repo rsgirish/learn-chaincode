@@ -19,27 +19,75 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strconv"
+
+	"encoding/json"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-// SimpleChaincode example simple Chaincode implementation
-type SimpleChaincode struct {
+var logger = shim.NewLogger("numbermgmt")
+
+// NumberManagementChainCode example simple Chaincode implementation
+type NumberManagementChainCode struct {
+}
+
+// NumberInfo information for number management
+type NumberInfo struct {
+	Number    string `json:"Number"`
+	Available bool   `json:"Available"`
+	Company   string `json:"Company"`
+}
+
+// CreateNumber is create number func
+func CreateNumber(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	logger.Debug("Entering CreateNumber")
+	if len(args) < 2 {
+		logger.Error("Invalid number of arguments")
+		return nil, errors.New("Missing arguments")
+	}
+	var number = args[0]
+	var available, err = strconv.ParseBool(args[1])
+	if err != nil {
+		logger.Error("Error parsing Boolean from arguments, defaulting to true", err)
+		available = true
+	}
+	var company = args[2]
+
+	numberInfo := &NumberInfo{
+		Number:    number,
+		Available: available,
+		Company:   company,
+	}
+	numberBytes, err := json.Marshal(&numberInfo)
+	if err != nil {
+		logger.Error("Error Marshling numberinfo", err)
+		return nil, err
+	}
+	err = stub.PutState(number, numberBytes)
+	if err != nil {
+		logger.Error("Error Marshling numberinfo", err)
+		return nil, err
+	}
+	logger.Info("Successfully updated Number Management")
+	return nil, nil
 }
 
 // ============================================================================================================================
 // Main
 // ============================================================================================================================
 func main() {
-	err := shim.Start(new(SimpleChaincode))
+	err := shim.Start(new(NumberManagementChainCode))
 	if err != nil {
-		fmt.Printf("Error starting Simple chaincode: %s", err)
+		logger.Errorf("Error starting Simple chaincode: %s", err)
 	}
 }
 
 // Init resets all the things
-func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+func (t *NumberManagementChainCode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	logger.Debug("Entering Init")
 	if len(args) != 1 {
+		logger.Error("Incorrect number of arguments. Expecting 1")
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
@@ -47,28 +95,28 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 }
 
 // Invoke is our entry point to invoke a chaincode function
-func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	fmt.Println("invoke is running " + function)
+func (t *NumberManagementChainCode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	logger.Debug("invoke is running " + function)
 
 	// Handle different functions
-	if function == "init" {													//initialize the chaincode state, used as reset
+	if function == "init" { //initialize the chaincode state, used as reset
 		return t.Init(stub, "init", args)
 	}
-	fmt.Println("invoke did not find func: " + function)					//error
+	fmt.Println("invoke did not find func: " + function) //error
 
 	return nil, errors.New("Received unknown function invocation: " + function)
 }
 
 // Query is our entry point for queries
-func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+func (t *NumberManagementChainCode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("query is running " + function)
 
 	// Handle different functions
-	if function == "dummy_query" {											//read a variable
-		fmt.Println("hi there " + function)						//error
-		return nil, nil;
+	if function == "dummy_query" { //read a variable
+		fmt.Println("hi there " + function) //error
+		return nil, nil
 	}
-	fmt.Println("query did not find func: " + function)						//error
+	fmt.Println("query did not find func: " + function) //error
 
 	return nil, errors.New("Received unknown function query: " + function)
 }
