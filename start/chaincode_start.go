@@ -18,7 +18,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 
 	"encoding/json"
@@ -104,8 +103,8 @@ func main() {
 // Init resets all the things
 func (t *NumberManagementChainCode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	logger.Debug("Entering Init")
-	if len(args) != 1 {
-		logger.Error("Incorrect number of arguments. Expecting 1")
+	if len(args) < 2 {
+		logger.Error("Incorrect number of arguments. Expecting 2")
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
@@ -118,9 +117,9 @@ func (t *NumberManagementChainCode) Invoke(stub shim.ChaincodeStubInterface, fun
 
 	// Handle different functions
 	if function == "init" { //initialize the chaincode state, used as reset
-		return t.Init(stub, "init", args)
+		return CreateNumber(stub, args)
 	}
-	fmt.Println("invoke did not find func: " + function) //error
+	logger.Error("invoke did not find func: " + function) //error
 
 	return nil, errors.New("Received unknown function invocation: " + function)
 }
