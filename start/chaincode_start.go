@@ -23,6 +23,8 @@ import (
 
 	"encoding/json"
 
+	"errors"
+
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -73,6 +75,24 @@ func CreateNumber(stub shim.ChaincodeStubInterface, args []string) ([]byte, erro
 	return nil, nil
 }
 
+//GetNumberInformation retrives number information
+func GetNumberInformation(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	logger.Debug("Entering Quering")
+	if len(args) != 1 {
+		logger.Error("Invalid number of arguments")
+		return nil, errors.New("Missing arguments")
+	}
+	var number = args[0]
+	bytes, err := stub.GetState(number)
+
+	if err != nil {
+		logger.Error("Could not fetch number with id "+number, err)
+		return nil, err
+	}
+	logger.Info("Processed Querying of Number information")
+	return bytes, nil
+}
+
 // ============================================================================================================================
 // Main
 // ============================================================================================================================
@@ -109,14 +129,8 @@ func (t *NumberManagementChainCode) Invoke(stub shim.ChaincodeStubInterface, fun
 
 // Query is our entry point for queries
 func (t *NumberManagementChainCode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	fmt.Println("query is running " + function)
-
-	// Handle different functions
-	if function == "dummy_query" { //read a variable
-		fmt.Println("hi there " + function) //error
-		return nil, nil
+	if function == "GetNumberInformation" {
+		return GetNumberInformation(stub, args)
 	}
-	fmt.Println("query did not find func: " + function) //error
-
-	return nil, errors.New("Received unknown function query: " + function)
+	return nil, nil
 }
