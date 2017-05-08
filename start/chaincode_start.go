@@ -18,7 +18,6 @@ package main
 
 import (
 	"errors"
-	"strconv"
 
 	"encoding/json"
 
@@ -34,7 +33,7 @@ type NumberManagementChainCode struct {
 // NumberInfo information for number management
 type NumberInfo struct {
 	Number    string `json:"Number"`
-	Available bool   `json:"Available"`
+	Available string `json:"Available"`
 	Company   string `json:"Company"`
 }
 
@@ -46,11 +45,7 @@ func CreateNumber(stub shim.ChaincodeStubInterface, args []string) ([]byte, erro
 		return nil, errors.New("Missing arguments")
 	}
 	var number = args[0]
-	var available, err = strconv.ParseBool(args[1])
-	if err != nil {
-		logger.Error("Error parsing Boolean from arguments, defaulting to true", err)
-		available = true
-	}
+	var available = args[1]
 	var company = args[2]
 
 	numberInfo := &NumberInfo{
@@ -108,7 +103,7 @@ func (t *NumberManagementChainCode) Init(stub shim.ChaincodeStubInterface, funct
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
-	return nil, nil
+	return CreateNumber(stub, args)
 }
 
 // Invoke is our entry point to invoke a chaincode function
@@ -129,5 +124,5 @@ func (t *NumberManagementChainCode) Query(stub shim.ChaincodeStubInterface, func
 	if function == "GetNumberInformation" {
 		return GetNumberInformation(stub, args)
 	}
-	return nil, nil
+	return GetNumberInformation(stub, args)
 }
