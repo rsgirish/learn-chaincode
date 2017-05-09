@@ -46,8 +46,9 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 	}
 	var number = args[0]
 	var company = args[1]
-
-	numberBytes, err := stub.GetState(number)
+	var numberBytes []byte
+	var err error
+	numberBytes, err = stub.GetState(number)
 	if err != nil {
 		logger.Error("Error retrieving number ", err)
 		return nil, err
@@ -56,22 +57,18 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 		logger.Error("Number " + number + " not found in system")
 		return nil, errors.New("Number " + number + " not found in the system")
 	}
-	//var numberInfo NumberInfo
-	//if err = json.Unmarshal(numberBytes, &numberInfo); err == nil {
-	//	logger.Error("Error marshaling data in store for number " + number)
-	//	return nil, err
-	//}
-	numberInfoNew := &NumberInfo{
-		Number:    number,
-		Available: "false",
-		Company:   company,
+	var numberInfo NumberInfo
+	if err = json.Unmarshal(numberBytes, &numberInfo); err == nil {
+		logger.Error("Error marshaling data in store for number " + number)
+		return nil, err
 	}
-	numberBytes1, err := json.Marshal(&numberInfoNew)
+	numberInfo.Company = company
+	numberBytes, err = json.Marshal(&numberInfo)
 	if err != nil {
 		logger.Error("Error Marshling numberinfo", err)
 		return nil, err
 	}
-	err = stub.PutState(number, numberBytes1)
+	err = stub.PutState(number, numberBytes)
 	if err != nil {
 		logger.Error("Error saving numberinfo", err)
 		return nil, err
