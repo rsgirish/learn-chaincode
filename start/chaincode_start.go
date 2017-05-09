@@ -76,7 +76,7 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 		logger.Error("Error saving numberinfo", err)
 		return nil, err
 	}
-	return numberBytes, nil
+	return nil, nil
 }
 
 // CreateNumber is create number func
