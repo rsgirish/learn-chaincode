@@ -56,11 +56,11 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 		logger.Error("Number " + number + " not found in system")
 		return nil, errors.New("Number " + number + " not found in the system")
 	}
-	var numberInfo NumberInfo
-	if err = json.Unmarshal(numberBytes, &numberInfo); err == nil {
-		logger.Error("Error marshaling data in store for number " + number)
-		return nil, err
-	}
+	//var numberInfo NumberInfo
+	//if err = json.Unmarshal(numberBytes, &numberInfo); err == nil {
+	//	logger.Error("Error marshaling data in store for number " + number)
+	//	return nil, err
+	//}
 	numberInfoNew := &NumberInfo{
 		Number:    number,
 		Available: "false",
