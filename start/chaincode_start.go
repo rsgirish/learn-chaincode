@@ -37,7 +37,7 @@ type NumberInfo struct {
 	Company   string `json:"Company"`
 }
 
-//updateNumber is update transaction
+//updateNumber is update transaction changin company
 func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Debug("Entering updateNumberCompany")
 	if len(args) < 2 {
