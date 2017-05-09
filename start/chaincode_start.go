@@ -46,9 +46,8 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 	}
 	var number = args[0]
 	var company = args[1]
-	var numberBytes []byte
-	var err error
-	numberBytes, err = stub.GetState(number)
+
+	numberBytes, err := stub.GetState(number)
 	if err != nil {
 		logger.Error("Error retrieving number ", err)
 		return nil, err
@@ -62,12 +61,12 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 		logger.Error("Error marshaling data in store for number " + number)
 		return nil, err
 	}
-	numberInfo1 := &NumberInfo{
+	numberInfoNew := &NumberInfo{
 		Number:    number,
 		Available: "false",
 		Company:   company,
 	}
-	numberBytes1, err := json.Marshal(&numberInfo1)
+	numberBytes1, err := json.Marshal(&numberInfoNew)
 	if err != nil {
 		logger.Error("Error Marshling numberinfo", err)
 		return nil, err
