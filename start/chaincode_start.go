@@ -66,12 +66,12 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 		Available: "false",
 		Company:   company,
 	}
-	numberBytes1, err := json.Marshal(&numberInfoNew)
+	numberBytes, err = json.Marshal(&numberInfoNew)
 	if err != nil {
 		logger.Error("Error Marshling numberinfo", err)
 		return nil, err
 	}
-	err = stub.PutState(number, numberBytes1)
+	err = stub.PutState(number, numberBytes)
 	if err != nil {
 		logger.Error("Error saving numberinfo", err)
 		return nil, err
