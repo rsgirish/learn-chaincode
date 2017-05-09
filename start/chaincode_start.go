@@ -37,6 +37,42 @@ type NumberInfo struct {
 	Company   string `json:"Company"`
 }
 
+//updateNumber is update transaction
+func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	logger.Debug("Entering updateNumberCompany")
+	if len(args) < 2 {
+		logger.Error("Invalid number of arguments for UpdateCompany")
+		return nil, errors.New("Invalid number of arguments for updateNumberCompany")
+	}
+	var number = args[0]
+	var company = args[1]
+
+	numberBytes, err := stub.GetState(number)
+	if err != nil {
+		logger.Error("Error retrieving number ", err)
+		return nil, err
+	}
+	if numberBytes == nil {
+		logger.Error("Number " + number + " not found in system")
+		return nil, errors.New("Number " + number + " not found in the system")
+	}
+	var numberInfo NumberInfo
+	if err = json.Unmarshal(numberBytes, &numberInfo); err == nil {
+		logger.Error("Error marshaling data in store for number " + number)
+		return nil, err
+	}
+	if company != numberInfo.Company {
+		numberInfo.Company = company
+		numberBytes, err = json.Marshal(numberInfo)
+		err = stub.PutState(number, numberBytes)
+		if err != nil {
+			logger.Error("Error Marshling numberinfo", err)
+			return nil, err
+		}
+	}
+	return numberBytes, nil
+}
+
 // CreateNumber is create number func
 func CreateNumber(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	logger.Debug("Entering CreateNumber")
@@ -98,12 +134,11 @@ func main() {
 // Init resets all the things
 func (t *NumberManagementChainCode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	logger.Debug("Entering Init")
-	if len(args) < 2 {
+	if len(args) < 1 {
 		logger.Error("Incorrect number of arguments. Expecting 2")
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
-
-	return CreateNumber(stub, args)
+	return nil, nil
 }
 
 // Invoke is our entry point to invoke a chaincode function
@@ -113,6 +148,8 @@ func (t *NumberManagementChainCode) Invoke(stub shim.ChaincodeStubInterface, fun
 	// Handle different functions
 	if function == "init" { //initialize the chaincode state, used as reset
 		return CreateNumber(stub, args)
+	} else if function == "updatecompany" {
+		return updateNumberCompany(stub, args)
 	}
 	logger.Error("invoke did not find func: " + function) //error
 
@@ -124,5 +161,6 @@ func (t *NumberManagementChainCode) Query(stub shim.ChaincodeStubInterface, func
 	if function == "GetNumberInformation" {
 		return GetNumberInformation(stub, args)
 	}
-	return GetNumberInformation(stub, args)
+	logger.Error("invoke did not find func: " + function) //error
+	return nil, errors.New("Received unknown function invocation: " + function)
 }
