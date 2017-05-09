@@ -63,7 +63,7 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 	}
 	numberInfoNew := &NumberInfo{
 		Number:    number,
-		Available: numberInfo.Company,
+		Available: "false",
 		Company:   company,
 	}
 	numberBytes, err = json.Marshal(&numberInfoNew)
