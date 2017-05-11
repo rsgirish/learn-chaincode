@@ -168,6 +168,23 @@ func GetNumberInformation(stub shim.ChaincodeStubInterface, args []string) ([]by
 	return bytes, nil
 }
 
+//GetTransaction history temp solution
+func GetTransactionHistory(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	logger.Debug("Entering retrieve Transaction Hitory")
+	if len(args) != 1 {
+		logger.Error("Invalid number of arguments")
+		return nil, errors.New("Missing arguments")
+	}
+	var number = args[0]
+	transactionKey := trasactionString + args[0]
+	transactionbytes, err := stub.GetState(transactionKey)
+	if err != nil {
+		logger.Error("Could not fetch number with id "+number, err)
+		return nil, err
+	}
+	return transactionbytes, nil
+}
+
 // ============================================================================================================================
 // Main
 // ============================================================================================================================
