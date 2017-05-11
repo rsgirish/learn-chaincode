@@ -18,6 +18,7 @@ package main
 
 import (
 	"errors"
+	"time"
 
 	"encoding/json"
 
@@ -25,6 +26,7 @@ import (
 )
 
 var logger = shim.NewLogger("numbermgmt")
+var trasactionString = "transaction_"
 
 // NumberManagementChainCode example simple Chaincode implementation
 type NumberManagementChainCode struct {
@@ -35,6 +37,17 @@ type NumberInfo struct {
 	Number    string `json:"Number"`
 	Available string `json:"Available"`
 	Company   string `json:"Company"`
+}
+
+// TransactionHistory temp solution
+type TransactionHistory struct {
+	Transactions []TransactionEntry `json:"transactions"`
+}
+
+//TransactionEntry temp solution
+type TransactionEntry struct {
+	Date   string `json:"date"`
+	Detail string `json:"detail"`
 }
 
 //updateNumber is update transaction changin company
@@ -74,6 +87,7 @@ func updateNumberCompany(stub shim.ChaincodeStubInterface, args []string) ([]byt
 		logger.Error("Error saving numberinfo", err)
 		return nil, err
 	}
+	transactionLog(stub, number, "Updated number")
 	return nil, nil
 }
 
@@ -99,11 +113,40 @@ func CreateNumber(stub shim.ChaincodeStubInterface, args []string) ([]byte, erro
 		return nil, err
 	}
 	err = stub.PutState(number, numberBytes)
+
 	if err != nil {
 		logger.Error("Error Marshling numberinfo", err)
 		return nil, err
 	}
+	err = stub.PutState(trasactionString+number, numberBytes)
+
+	if err != nil {
+		logger.Error("Error Marshling numberinfo", err)
+		return nil, err
+	}
+	transactionLog(stub, number, "creating number")
 	logger.Info("Successfully updated Number Management")
+	return nil, nil
+}
+
+func transactionLog(stub shim.ChaincodeStubInterface, key string, transaction string) ([]byte, error) {
+	transactionKey := trasactionString + key
+	transactionbytes, err := stub.GetState(transactionKey)
+	if err != nil {
+		logger.Error("Error logging transcation for "+key, err)
+		return nil, err
+	}
+	var transactionHistory TransactionHistory
+	var transactionEntry = TransactionEntry{
+		Date:   time.Nanosecond.String(),
+		Detail: transaction,
+	}
+	if transactionbytes != nil {
+		err = json.Unmarshal(transactionbytes, &transactionHistory)
+	}
+	transactionHistory.Transactions = append(transactionHistory.Transactions, transactionEntry)
+	transactionbytes, err = json.Marshal(&transactionHistory)
+	stub.PutState(transactionKey, transactionbytes)
 	return nil, nil
 }
 
