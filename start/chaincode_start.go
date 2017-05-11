@@ -138,7 +138,7 @@ func transactionLog(stub shim.ChaincodeStubInterface, key string, transaction st
 	}
 	var transactionHistory TransactionHistory
 	var transactionEntry = TransactionEntry{
-		Date:   time.Nanosecond.String(),
+		Date:   time.Now().String(),
 		Detail: transaction,
 	}
 	if transactionbytes != nil {
