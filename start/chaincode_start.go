@@ -224,6 +224,8 @@ func (t *NumberManagementChainCode) Invoke(stub shim.ChaincodeStubInterface, fun
 func (t *NumberManagementChainCode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	if function == "GetNumberInformation" {
 		return GetNumberInformation(stub, args)
+	} else if function == "GetTransactionHistory" {
+		return GetTransactionHistory(stub, args)
 	}
 	logger.Error("invoke did not find func: " + function) //error
 	return nil, errors.New("Received unknown function invocation: " + function)
